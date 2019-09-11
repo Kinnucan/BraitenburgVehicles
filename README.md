@@ -1,6 +1,6 @@
-# BasicBot-Code
-Code for controlling the EV3 robot as built for this class
+# Homework 1
+Starter code files for Homework 1
 
-The basicBot.py file has a definition of a robot controller class. This gives a higher-level interface for working with motors and sensors on the robot. The ev3dev commands are necessarily low level, since you can build many different robots with Lego parts. This class defines commands specific to this build.
+This contains a fresh copy of basicBot.py and testRobot.py, which you may not need, if you have a working one on your robot.
 
-The testRobot.py file contains tester code to test different aspects of the robot, and to illustrate how to create and use the robot controller class.
+In addition, this contains starterBraitenberg.nlogo, which is a complete NetLogo model that creates environments for Braitenberg Vehicles. You will implement different basic Braitenberg vehicle code.
