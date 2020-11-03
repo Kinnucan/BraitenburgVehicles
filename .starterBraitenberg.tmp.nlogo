@@ -25,7 +25,7 @@ end
 to go-B1
   ask turtles
     [ set patches-in-cone [pcolor] of patches in-cone 3 60
-      set speed ((mean patches-in-cone) - 50) * (5 / 9)
+      set speed ((mean patches-in-cone)-50) * (5 / 9)
 ;      set speed (speed - 50) * (5 / 9)
       show speed
       fd speed ]
