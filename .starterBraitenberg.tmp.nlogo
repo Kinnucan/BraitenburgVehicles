@@ -17,6 +17,8 @@ to setup
   create-turtles num-turtles
     [ set color red
       setxy random-xcor random-ycor ]
+  ask one-of turtles
+    [ pen-down ]
 
   setup-patches
   reset-ticks
@@ -25,10 +27,22 @@ end
 to go-B1
   ask turtles
     [ set patches-in-cone [pcolor] of patches in-cone 3 60
-      set speed ((mean patches-in-cone)-50) * (5 / 9)
+      set speed ((mean patches-in-cone) - 50) * (5 / 9)
 ;      set speed (speed - 50) * (5 / 9)
       show speed
       fd speed ]
+end
+
+to go-B2A
+  ask turtles
+    [ right 90
+      let colorRight [pcolor] of patches in-cone 3 60
+      left 180
+      let colorLeft [pcolor] of patches in-cone 3 60
+      right 90
+      let rightval ((mean colorRight) - 50) * (5 / 9)
+      let leftval ((mean colorLeft) - 50) * (5 / 9)
+      set-motor-speeds leftval rightval ]
 end
 
 ;; ---------------------------------------------
@@ -107,6 +121,23 @@ GRAPHICS-WINDOW
 1
 ticks
 30.0
+
+BUTTON
+0
+0
+0
+0
+NIL
+NIL
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 SLIDER
 21
@@ -190,6 +221,40 @@ BUTTON
 241
 run-B1
 go-B1
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+73
+242
+155
+275
+step-B2A
+go-B2A
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+72
+276
+149
+309
+run-B2A
+go-B2A
 T
 1
 T

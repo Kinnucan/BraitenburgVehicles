@@ -17,6 +17,8 @@ to setup
   create-turtles num-turtles
     [ set color red
       setxy random-xcor random-ycor ]
+  ask one-of turtles
+    [ pen-down ]
 
   setup-patches
   reset-ticks
@@ -29,6 +31,30 @@ to go-B1
 ;      set speed (speed - 50) * (5 / 9)
       show speed
       fd speed ]
+end
+
+to go-B2A
+  ask turtles
+    [ right 90
+      let colorRight [pcolor] of patches in-cone 3 60
+      left 180
+      let colorLeft [pcolor] of patches in-cone 3 60
+      right 90
+      let rightval ((mean colorRight) - 50) * (5 / 9)
+      let leftval ((mean colorLeft) - 50) * (5 / 9)
+      set-motor-speeds leftval rightval ]
+end
+
+to go-B2B
+  ask turtles
+    [ right 90
+      let colorRight [pcolor] of patches in-cone 3 60
+      left 180
+      let colorLeft [pcolor] of patches in-cone 3 60
+      right 90
+      let rightval ((mean colorRight) - 50) * (5 / 9)
+      let leftval ((mean colorLeft) - 50) * (5 / 9)
+      set-motor-speeds rightval leftval ]
 end
 
 ;; ---------------------------------------------
@@ -190,6 +216,74 @@ BUTTON
 241
 run-B1
 go-B1
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+73
+242
+155
+275
+step-B2A
+go-B2A
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+72
+276
+149
+309
+run-B2A
+go-B2A
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+71
+312
+152
+345
+step-B2B
+go-B2B
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+70
+348
+141
+381
+go-B2B
+go-B2B
 T
 1
 T
