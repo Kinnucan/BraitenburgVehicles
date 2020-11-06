@@ -1,9 +1,9 @@
 globals[numOfEach]
 patches-own [kind]  ;; kind distinguishes bright and dark patches from in-between patches
-turtles-own [
-  speed
-  patches-in-cone
-]
+;turtles-own [
+;  speed
+;  patches-in-cone
+;]
 
 
 ;;; This first creates num-turtles turtles, asks them to turn themselves red and move to a
@@ -17,48 +17,74 @@ to setup
   create-turtles num-turtles
     [ set color red
       setxy random-xcor random-ycor ]
-  ask one-of turtles
-    [ pen-down ]
+  if one-turtle-leaves-a-trail [ ask one-of turtles [ pen-down ] ]
 
   setup-patches
   reset-ticks
 end
 
+
+;; ---------------------------------------------
+;; Add go-B1, go-B2A, and go-B2B functions here
+
+
+to-report motor-response [ perceived-color ]
+  report (perceived-color mod 10) * (5 / 9)
+end
+
 to go-B1
   ask turtles
-    [ set patches-in-cone [pcolor] of patches in-cone 3 60
-      set speed ((mean patches-in-cone) - 50) * (5 / 9)
-;      set speed (speed - 50) * (5 / 9)
-      show speed
-      fd speed ]
+    [ ifelse B1-perceptor = "patch-here"
+        [ let speed motor-response [pcolor] of patch-here
+          ;show speed
+          fd speed ]
+        [ let patches-in-cone [pcolor] of patches in-cone cone-radius cone-angle
+          show patches-in-cone
+          let speed motor-response mean patches-in-cone
+          ;show speed
+          fd speed ] ]
+  tick
 end
 
 to go-B2A
   ask turtles
-    [ right 90
-      let colorRight [pcolor] of patches in-cone 3 60
-      left 180
-      let colorLeft [pcolor] of patches in-cone 3 60
-      right 90
-      let rightval ((mean colorRight) - 50) * (5 / 9)
-      let leftval ((mean colorLeft) - 50) * (5 / 9)
-      set-motor-speeds leftval rightval ]
+    [ ifelse B2-perceptor = "patch-left-right-ahead"
+        [ let colorLeft [pcolor] of patch-left-and-ahead B2-left-right-angle 1
+          let colorRight [pcolor] of patch-right-and-ahead B2-left-right-angle 1
+          let left-motor motor-response colorLeft
+          let right-motor motor-response colorRight
+          set-motor-speeds left-motor right-motor ]
+        [ left B2-left-right-angle
+          let colorLeft [pcolor] of patches in-cone cone-radius cone-angle
+          right B2-left-right-angle * 2
+          let colorRight [pcolor] of patches in-cone cone-radius cone-angle
+          left B2-left-right-angle
+          let left-motor motor-response mean colorLeft
+          let right-motor motor-response mean colorRight
+          set-motor-speeds left-motor right-motor ] ]
+  tick
 end
 
 to go-B2B
   ask turtles
-    [ right 90
-      let colorRight [pcolor] of patches in-cone 3 60
-      left 180
-      let colorLeft [pcolor] of patches in-cone 3 60
-      right 90
-      let rightval ((mean colorRight) - 50) * (5 / 9)
-      let leftval ((mean colorLeft) - 50) * (5 / 9)
-      set-motor-speeds rightval leftval ]
+    [ ifelse B2-perceptor = "patch-left-right-ahead"
+        [ let colorLeft [pcolor] of patch-left-and-ahead B2-left-right-angle 1
+          let colorRight [pcolor] of patch-right-and-ahead B2-left-right-angle 1
+          let left-motor motor-response colorRight
+          let right-motor motor-response colorLeft
+          set-motor-speeds left-motor right-motor ]
+        [ left B2-left-right-angle
+          let colorLeft [pcolor] of patches in-cone cone-radius cone-angle
+          right B2-left-right-angle * 2
+          let colorRight [pcolor] of patches in-cone cone-radius cone-angle
+          left B2-left-right-angle
+          let left-motor motor-response mean colorRight
+          let right-motor motor-response mean colorLeft
+          set-motor-speeds left-motor right-motor ] ]
+  tick
 end
 
-;; ---------------------------------------------
-;; Add go-B1, go-B2A, and go-B2B functions here
+
 
 
 
@@ -108,13 +134,13 @@ to setup-patches
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-219
+201
 10
-842
-634
+723
+533
 -1
 -1
-15.0
+12.54
 1
 10
 1
@@ -280,9 +306,9 @@ NIL
 BUTTON
 70
 348
-141
+152
 381
-go-B2B
+run-B2B
 go-B2B
 T
 1
@@ -293,6 +319,100 @@ NIL
 NIL
 NIL
 1
+
+CHOOSER
+732
+68
+824
+113
+B1-perceptor
+B1-perceptor
+"in-cone" "patch-here"
+0
+
+SWITCH
+731
+20
+915
+53
+one-turtle-leaves-a-trail
+one-turtle-leaves-a-trail
+1
+1
+-1000
+
+CHOOSER
+835
+67
+929
+112
+B2-perceptor
+B2-perceptor
+"in-cone" "patch-left/right-ahead"
+0
+
+SLIDER
+731
+124
+903
+157
+cone-radius
+cone-radius
+3
+10
+3.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+732
+175
+904
+208
+cone-angle
+cone-angle
+0
+360
+60.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+733
+228
+954
+261
+B2-left-right-angle
+B2-left-right-angle
+0
+180
+90.0
+1
+1
+NIL
+HORIZONTAL
+
+PLOT
+734
+281
+1149
+504
+Average Brightness of the Patches Turtles are on over Time
+Ticks
+Avg. Patch Brightness
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot mean [[pcolor] of patch-here mod 10] of turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?
