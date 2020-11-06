@@ -1,108 +1,84 @@
-globals[numOfEach]
-patches-own [kind]  ;; kind distinguishes bright and dark patches from in-between patches
-turtles-own [
-  speed
-  patches-in-cone
-]
+turtles-own
+  [ speed ]
+breed [runners runner]
+breed [chasers chaser]
+runners-own
+  [ frozen ]
 
-
-;;; This first creates num-turtles turtles, asks them to turn themselves red and move to a
-;;; random (x, y) coordinate in the world.  It then calls the function setup-patches
-;;; which sets the colors of the patches (you do *NOT* need to understand how
-;;; setup-patches works)
-to setup
+to setup ;; Observer function
   clear-all
-  ;; Add here steps to create num-turtles turtles, make them red, and move them to a random
-  ;; location
-  create-turtles num-turtles
+  ask patches
+    [ set pcolor 67 ]
+  create-chasers teamSizeChaser
+    [ set color blue
+      setxy random-xcor random-ycor
+      set speed (random 4) + 1 ]
+  create-runners teamSizeRunner
     [ set color red
-      setxy random-xcor random-ycor ]
-  ask one-of turtles
-    [ pen-down ]
-
-  setup-patches
+      setxy random-xcor random-ycor
+      set speed (random 4) + 1
+      set frozen false ]
   reset-ticks
 end
 
-to go-B1
-  ask turtles
-    [ set patches-in-cone [pcolor] of patches in-cone 3 60
-      set speed ((mean patches-in-cone) - 50) * (5 / 9)
-;      set speed (speed - 50) * (5 / 9)
-      show speed
-      fd speed ]
+to go ;; Observer function
+  ask chasers
+    [ chaserTurn ]
+  ask runners
+    [ if frozen = false
+      [ runnerTurn ] ]
+  ask chasers
+    [ move ]
+  ask runners
+    [ if frozen = false
+        [ move ] ]
+  tick
 end
 
-to go-B2A
-  ask turtles
-    [ right 90
-      let colorRight [pcolor] of patches in-cone 3 60
-      left 180
-      let colorLeft [pcolor] of patches in-cone 3 60
-      right 90
-      let rightval ((mean colorRight) - 50) * (5 / 9)
-      let leftval ((mean colorLeft) - 50) * (5 / 9)
-      set-motor-speeds leftval rightval ]
+to move
+  fd speed
 end
 
-;; ---------------------------------------------
-;; Add go-B1, go-B2A, and go-B2B functions here
-
-
-
-
-
-to set-motor-speeds [leftval rightval]
-  ;; This is a function that converts left speed and right speed into what the turtle can do.
-  ;; It moves the turtle forward in its old directly an amount that is the average of left and right
-  ;; speeds. It then turns the turtle based on the difference between left and right values
-    fd (rightval + leftval) / 2
-    rt (leftval - rightval) * turn-angle
+to changeColor
+  if any? turtles-here with [color = red]
+    [ ask one-of turtles-here with [color = red]
+        [ set color 116 ] ]
 end
 
+to chaserTurn
+  let unfrozenRunners runners-here with [frozen = false]
+  if any? unfrozenRunners
+    [ ask one-of unfrozenRunners
+        [ set frozen true ] ]
+  let runnersNearby runners with [frozen = false] in-radius visionLimitChaser
+  if any? runnersNearby
+    [ let closestRunner min-one-of runnersNearby [distance myself]
+      set heading towards closestRunner ]
+end
 
-
-;;; -----------------------------------------------------------------
-;;; Below this point you can ignore the code.  It just picks a number of random locations,
-;;; equally divided into bright and dark, and then shades
-;;; all other patches in between.
-
-
-to setup-patches
-  ;; find patches to be centers of greenness
-  set numOfEach round( (2 * max-pxcor) / 50)
-  repeat numOfEach
-  [ ask patch random-pxcor random-pycor
-    [ set pcolor 59
-      set kind "bright" ]
-    ask patch random-pxcor random-pycor
-    [ set pcolor 50
-      set kind "dark" ]
-  ]
-  let brights patches with [kind = "bright"]
-  let darks patches with [kind = "dark"]
-  ask patches
-  [ if not ( kind = "bright" or kind = "dark")
-    [ let mybrights sort-by [ [?1 ?2] -> distance ?1 < distance ?2 ] brights
-      let mydarks sort-by [ [?1 ?2] -> distance ?1 < distance ?2 ] darks
-      let closest-bright first mybrights
-      let br-dist distance closest-bright
-      let closest-dark first mydarks
-      let dk-dist distance closest-dark
-      let dk-perc (dk-dist / (br-dist + dk-dist))
-      set pcolor 50 + dk-perc * 10
-    ]
-  ]
+to runnerTurn
+  let frozenRunners runners-here with [frozen = true]
+  if any? frozenRunners
+    [ ask frozenRunners
+        [ set frozen true ] ]
+  let frozenRunnersNearby runners with [frozen = true] in-radius visionLimitRunner
+  let chasersNearby chasers in-radius visionLimitRunner
+  ifelse any? frozenRunnersNearby
+    [ let closestFrozenRunner min-one-of frozenRunnersNearby [distance myself]
+      set heading towards closestFrozenRunner ]
+    [ let closestChaser min-one-of chasersNearby [distance myself]
+      set heading towards closestChaser
+      left 180 ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-219
+210
 10
-842
-634
+647
+448
 -1
 -1
-15.0
+13.0
 1
 10
 1
@@ -112,10 +88,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--20
-20
--20
-20
+-16
+16
+-16
+16
 0
 0
 1
@@ -123,121 +99,12 @@ ticks
 30.0
 
 BUTTON
-0
-0
-0
-0
-NIL
-NIL
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-SLIDER
-21
-29
-194
-62
-turn-angle
-turn-angle
-0
-100
-70.0
-1
-1
-degrees
-HORIZONTAL
-
-SLIDER
-22
-62
-194
-95
-num-turtles
-num-turtles
-0
-100
-20.0
-1
-1
-turtles
-HORIZONTAL
-
-BUTTON
-73
-140
-139
-173
-setup
-setup
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-MONITOR
-55
-94
-161
-139
-numBrightDark
-numOfEach
-0
-1
-11
-
-BUTTON
-73
-175
-147
-208
-step-B1
-go-B1
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-73
-208
+30
+109
+93
 142
-241
-run-B1
-go-B1
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-73
-242
-155
-275
-step-B2A
-go-B2A
+setup
+setup
 NIL
 1
 T
@@ -249,12 +116,12 @@ NIL
 1
 
 BUTTON
-72
-276
-149
-309
-run-B2A
-go-B2A
+29
+144
+92
+177
+go
+go
 T
 1
 T
@@ -264,55 +131,118 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+30
+42
+202
+75
+teamSizeRunner
+teamSizeRunner
+1
+100
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+30
+75
+202
+108
+visionLimit
+visionLimit
+1
+10
+5.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+30
+10
+202
+43
+teamSizeChaser
+teamSizeChaser
+1
+100
+8.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+28
+180
+200
+213
+visionLimitRunner
+visionLimitRunner
+1
+10
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+28
+220
+200
+253
+visionLimitChaser
+visionLimitChaser
+1
+10
+10.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
 
-This model is a simulation of Braitenberg's first three vehicles: Vehicle 1, Vehicle 2a, and Vehicle 2b.
+(a general understanding of what the model is trying to show or explain)
 
 ## HOW IT WORKS
 
-Vehicle 1 turtles always move straight ahead.  They change their speed based on the color of the patch they are on.  The brighter the patch, the faster the turtle moves.  The darkest patches cause the turtle to stop, altogether.
-
-Vehicle 2a turtles sense the patches to their left and to their right (how far they turn to left and right is controlled by the turn-angle slider).  The average brightness to the turtle's left corresponds to a "left motor" speed, and similarly for the right. The left and right speeds are then converted into a distance moved and a new heading.
-
-Vehicle 2b turtles are similar to 2a, except that the average brightness to the left of the turtle controls the RIGHT motor speed, and vice versa.
+(what rules the agents use to create the overall behavior of the model)
 
 ## HOW TO USE IT
 
-The first slider controls the turn angle for Vehicle 2a and 2b turtles.  To collect sensor values from its left, the turtle turns left the turn-angle amount, then collects a set of colors from patches in a cone in that direction, then it does the same to the right.
-
-The second slider controls how many turtles are displayed.  Just a few turtles are easier to follow than many turtles, but some patterns emerge more clearly when there are many turtles.
-
-The setup button initializes the world to have two bright spots, two dark spots, and graduated shading in between.  It also intitializes the correct number of turtles, at random locations and headings.
-
-The next pair of buttons either run one step or continual steps of the turtles acting like Vehicle 1 turtles.
-
-The second pair of buttons either run one step or continual steps of the turtles acting like Vehicle 2a turtles.
-
-The third pair of buttons either run one step or continual steps of the turtles acting like Vehicle 2b turtles. NOTE:  you have to implement this one!!
+(how to use the model, including a description of each of the items in the Interface tab)
 
 ## THINGS TO NOTICE
 
-Notice when the turtles speed up and when they slow down and stop.
-
-Look at the difference between Vehicle 2a and Vehicle 2b: because speed differs, they do not show completely mirrored behavior.  What do you see instead?
+(suggested things for the user to notice while running the model)
 
 ## THINGS TO TRY
 
-Try changing the turn angle to see what effect, if any, that has on the turtles' behavior.
-
-What changes if you go into the procedures and change the slowest speed from zero to 1, so that the turtles never quite stop moving?
+(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
 
 ## EXTENDING THE MODEL
 
-You are going to implement the turtles and their behaviors.
+(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
 
-You could add other Vehicles from Braitenberg's book, or change how each turtle senses its environment.
+## NETLOGO FEATURES
+
+(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+
+## RELATED MODELS
+
+(models in the NetLogo Models Library and elsewhere which are of related interest)
 
 ## CREDITS AND REFERENCES
 
-This model is based on ideas from Braitenberg's "Vehicles" book.
+(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
 @#$#@#$#@
 default
 true
@@ -508,12 +438,19 @@ Polygon -7500403 true true 135 90 120 45 150 15 180 45 165 90
 
 sheep
 false
-0
-Rectangle -7500403 true true 151 225 180 285
-Rectangle -7500403 true true 47 225 75 285
-Rectangle -7500403 true true 15 75 210 225
-Circle -7500403 true true 135 75 150
-Circle -16777216 true false 165 76 116
+15
+Circle -1 true true 203 65 88
+Circle -1 true true 70 65 162
+Circle -1 true true 150 105 120
+Polygon -7500403 true false 218 120 240 165 255 165 278 120
+Circle -7500403 true false 214 72 67
+Rectangle -1 true true 164 223 179 298
+Polygon -1 true true 45 285 30 285 30 240 15 195 45 210
+Circle -1 true true 3 83 150
+Rectangle -1 true true 65 221 80 296
+Polygon -1 true true 195 285 210 285 210 240 240 210 195 210
+Polygon -7500403 true false 276 85 285 105 302 99 294 83
+Polygon -7500403 true false 219 85 210 105 193 99 201 83
 
 square
 false
@@ -598,6 +535,13 @@ Line -7500403 true 216 40 79 269
 Line -7500403 true 40 84 269 221
 Line -7500403 true 40 216 269 79
 Line -7500403 true 84 40 221 269
+
+wolf
+false
+0
+Polygon -16777216 true false 253 133 245 131 245 133
+Polygon -7500403 true true 2 194 13 197 30 191 38 193 38 205 20 226 20 257 27 265 38 266 40 260 31 253 31 230 60 206 68 198 75 209 66 228 65 243 82 261 84 268 100 267 103 261 77 239 79 231 100 207 98 196 119 201 143 202 160 195 166 210 172 213 173 238 167 251 160 248 154 265 169 264 178 247 186 240 198 260 200 271 217 271 219 262 207 258 195 230 192 198 210 184 227 164 242 144 259 145 284 151 277 141 293 140 299 134 297 127 273 119 270 105
+Polygon -7500403 true true -1 195 14 180 36 166 40 153 53 140 82 131 134 133 159 126 188 115 227 108 236 102 238 98 268 86 269 92 281 87 269 103 269 113
 
 x
 false
