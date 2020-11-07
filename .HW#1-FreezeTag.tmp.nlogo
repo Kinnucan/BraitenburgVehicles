@@ -65,7 +65,7 @@ to runnerTurn
   let frozenRunnersNearby runners with [frozen = true] in-radius visionLimitRunner
   let chasersNearby chasers in-radius visionLimitRunner
 
-  ifelse prioritize-unfreezing
+  ifelse prioritize-freezing
    [ifelse any? frozenRunnersNearby
     [ let closestFrozenRunner min-one-of frozenRunnersNearby [distance myself]
       set heading towards closestFrozenRunner ]
