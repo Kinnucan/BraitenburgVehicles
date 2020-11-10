@@ -10,7 +10,7 @@ patches-own [kind]  ;; kind distinguishes bright and dark patches from in-betwee
 ;;; random (x, y) coordinate in the world.  It then calls the function setup-patches
 ;;; which sets the colors of the patches (you do *NOT* need to understand how
 ;;; setup-patches works)
-to setup
+to setup ; observer function
   clear-all
   ;; Add here steps to create num-turtles turtles, make them red, and move them to a random
   ;; location
@@ -28,27 +28,27 @@ end
 ;; Add go-B1, go-B2A, and go-B2B functions here
 
 
-to-report motor-response [ perceived-color ]
+to-report motor-response [ perceived-color ] ; reporter function
   report (perceived-color mod 10) * (5 / 9)
 end
 
-to go-B1
+to go-B1 ; observer function
   ask turtles
-    [ ifelse B1-perceptor = "patch-here"
+    [ ifelse B1-perceptor = "patch-here" ; checks which perception method the turtle uses
         [ let speed motor-response [pcolor] of patch-here
           ;show speed
           fd speed ]
         [ let patches-in-cone [pcolor] of patches in-cone cone-radius cone-angle
-          show patches-in-cone
+          ;show patches-in-cone
           let speed motor-response mean patches-in-cone
           ;show speed
           fd speed ] ]
   tick
 end
 
-to go-B2A
+to go-B2A ; observer function
   ask turtles
-    [ ifelse B2-perceptor = "patch-left-right-ahead"
+    [ ifelse B2-perceptor = "patch-left-right-ahead" ; checks which perception method the turtle uses
         [ let colorLeft [pcolor] of patch-left-and-ahead B2-left-right-angle 1
           let colorRight [pcolor] of patch-right-and-ahead B2-left-right-angle 1
           let left-motor motor-response colorLeft
@@ -65,9 +65,9 @@ to go-B2A
   tick
 end
 
-to go-B2B
+to go-B2B ; observer function
   ask turtles
-    [ ifelse B2-perceptor = "patch-left-right-ahead"
+    [ ifelse B2-perceptor = "patch-left-right-ahead" ; checks which perception method the turtle uses
         [ let colorLeft [pcolor] of patch-left-and-ahead B2-left-right-angle 1
           let colorRight [pcolor] of patch-right-and-ahead B2-left-right-angle 1
           let left-motor motor-response colorRight
@@ -90,7 +90,7 @@ end
 
 
 
-to set-motor-speeds [leftval rightval]
+to set-motor-speeds [leftval rightval] ; turtle function
   ;; This is a function that converts left speed and right speed into what the turtle can do.
   ;; It moves the turtle forward in its old directly an amount that is the average of left and right
   ;; speeds. It then turns the turtle based on the difference between left and right values
@@ -106,7 +106,7 @@ end
 ;;; all other patches in between.
 
 
-to setup-patches
+to setup-patches ; observer function
   ;; find patches to be centers of greenness
   set numOfEach round( (2 * max-pxcor) / 50)
   repeat numOfEach
@@ -176,7 +176,7 @@ degrees
 HORIZONTAL
 
 SLIDER
-22
+21
 62
 194
 95
@@ -270,7 +270,7 @@ NIL
 1
 
 BUTTON
-72
+73
 276
 149
 309
@@ -287,7 +287,7 @@ NIL
 1
 
 BUTTON
-71
+73
 312
 152
 345
@@ -304,7 +304,7 @@ NIL
 1
 
 BUTTON
-70
+73
 348
 152
 381
@@ -321,7 +321,7 @@ NIL
 1
 
 CHOOSER
-732
+731
 68
 824
 113
@@ -343,9 +343,9 @@ one-turtle-leaves-a-trail
 
 CHOOSER
 835
-67
-929
-112
+68
+992
+113
 B2-perceptor
 B2-perceptor
 "in-cone" "patch-left/right-ahead"
@@ -367,13 +367,13 @@ NIL
 HORIZONTAL
 
 SLIDER
-732
+731
 175
-904
+903
 208
 cone-angle
 cone-angle
-0
+45
 360
 60.0
 1
@@ -382,7 +382,7 @@ NIL
 HORIZONTAL
 
 SLIDER
-733
+731
 228
 954
 261
@@ -397,9 +397,9 @@ NIL
 HORIZONTAL
 
 PLOT
-734
+731
 281
-1149
+1146
 504
 Average Brightness of the Patches Turtles are on over Time
 Ticks
